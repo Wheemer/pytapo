@@ -24,7 +24,7 @@ from .spake2p import (
     sha256_hex_upper,
 )
 
-# The camera user is always the literal "admin", sent hashed the way the app does
+# The legacy capability probe uses a fixed identity and sends no password.
 # (libtapocameranetwork j2.u): sha256 upper hex if user_hash_type == 1, else md5 hex.
 CAMERA_USER = "admin"
 SESSION_ERRORS = (-40401, -40421)
@@ -137,6 +137,7 @@ class Tpap:
         self.host = host
         self.controlPort = controlPort or 443
         # TPAP authenticates with the TP-Link cloud password, not the camera account.
+        self.username = user
         self.password = cloudPassword or password
         self.hass = hass
         self.asyncHandler = asyncHandler
@@ -220,8 +221,8 @@ class Tpap:
 
     def _username(self):
         if (self.tpapInfo or {}).get("user_hash_type") == 1:
-            return sha256_hex_upper(CAMERA_USER)
-        return md5_hex(CAMERA_USER)
+            return sha256_hex_upper(self.username)
+        return md5_hex(self.username)
 
     def _passcodes(self):
         # Same candidates and order as the app (j2.s, pake 2), without the local

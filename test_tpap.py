@@ -382,6 +382,14 @@ def test_username_follows_user_hash_type():
     assert t._username() == hashlib.sha256(b"admin").hexdigest().upper()
 
 
+def test_tpap_uses_configured_username():
+    t = Tpap("192.0.2.1", 443, "custom-user", "pw")
+    t.tpapInfo = {"pake": [2]}
+    assert t._username() == hashlib.md5(b"custom-user").hexdigest()
+    t.tpapInfo["user_hash_type"] = 1
+    assert t._username() == hashlib.sha256(b"custom-user").hexdigest().upper()
+
+
 def test_async_interface_without_hass():
     camera = FakeCamera("secret pw")
     t = make_transport(camera)
